@@ -19,20 +19,20 @@
  *
  */
 metadata {
-	definition (name: "August Smart Lock Pro 3rd Generation", namespace: "me.bendy.august", author: "Ben Rimmasch", minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {
-		capability "Actuator"
-		capability "Lock"
-		capability "Polling"
-		capability "Refresh"
-		capability "Sensor"
-		capability "Lock Codes"
-		capability "Battery"
-		capability "Health Check"
-		capability "Configuration"
-        capability "Contact Sensor"
+	definition (name: "Z-Wave August Lock", namespace: "me.bendy.august", author: "Ben Rimmasch", minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {
+	capability "Actuator"
+	capability "Lock"
+	capability "Polling"
+	capability "Refresh"
+	capability "Sensor"
+	capability "Lock Codes"
+	capability "Battery"
+	capability "Health Check"
+	capability "Configuration"
+	capability "Contact Sensor"
 
-        // August
-        fingerprint mfr:"033F", prod:"0001", model:"0001", deviceJoinName: "August Smart Lock Pro 3rd Gen Z-Wave Door Lock"
+	// August
+	fingerprint mfr:"033F", prod:"0001", model:"0001", deviceJoinName: "August Smart Lock Pro 3rd Gen Z-Wave Door Lock"
 		
 	}
 
