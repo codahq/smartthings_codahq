@@ -19,7 +19,7 @@
  *
  */
 metadata {
-	definition (name: "Z-Wave August Lock", namespace: "me.bendy.august", author: "Ben Rimmasch", minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {
+	definition (name: "Z-Wave August Lock", namespace: "codahq", author: "Ben Rimmasch", minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {
 	capability "Actuator"
 	capability "Lock"
 	capability "Polling"
