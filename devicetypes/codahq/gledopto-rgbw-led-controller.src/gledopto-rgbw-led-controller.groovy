@@ -49,9 +49,9 @@ metadata {
         command "setLoopTime"
         command "setDirection"
         
-        command "wwOn"
-        command "wwOff"
-        command "setWwLevel"
+        command "white1On"
+        command "white1Off"
+        command "setWhite1Level"
         
         command "alert"
         command "toggle"
@@ -139,11 +139,11 @@ metadata {
         }
         
         standardTile("ww", "device.ww", height: 1, width: 1, inactiveLabel: false, decoration: "flat", canChangeIcon: false) {
-            state "off", label:"WW/W", action:"wwOn", icon:"st.illuminance.illuminance.dark", backgroundColor:"#cccccc"
-            state "on", label:"WW/W", action:"wwOff", icon:"st.illuminance.illuminance.bright", backgroundColor:"#000000"
+            state "off", label:"WW/W", action:"white1On", icon:"st.illuminance.illuminance.dark", backgroundColor:"#cccccc"
+            state "on", label:"WW/W", action:"white1Off", icon:"st.illuminance.illuminance.bright", backgroundColor:"#000000"
         }
         controlTile("wwSliderControl", "device.wwLevel", "slider", height: 1, width: 4, inactiveLabel: false) {
-			state "wwLevel", action:"setWwLevel"
+			state "wwLevel", action:"setWhite1Level"
 		}
         valueTile("wwValueTile", "device.wwLevel", height: 1, width: 1) {
         	state "wwLevel", label:'${currentValue}%'
@@ -327,8 +327,8 @@ def toggle() {
 	"st cmd 0x${device.deviceNetworkId} ${endpointId} 6 2 {}"
 }
 
-def wwOn(onTime = null) {
-	log.debug "wwOn()"
+def white1On(onTime = null) {
+	log.debug "white1On()"
     sendEvent(name: "ww", value: "on")
     if (onTime) {
     	def newTime = onTime * 10
@@ -340,9 +340,9 @@ def wwOn(onTime = null) {
     	"st cmd 0x${device.deviceNetworkId} ${dimmableEndpointId} 6 1 {}"
     }
 }
-def wwOff() {
+def white1Off() {
 	// just assume it works for now
-	log.debug "wwOff()"
+	log.debug "white1Off()"
     sendEvent(name: "ww", value: "off")
     "st cmd 0x${device.deviceNetworkId} ${dimmableEndpointId} 6 0 {}"
 }
@@ -359,8 +359,8 @@ def setWwLevel(value) {
 */
 
 // adding duration to enable transition time adjustments
-def setWwLevel(value, duration = 21) {
-	log.debug "setWwLevel: ${value}"
+def setWhite1Level(value, duration = 21) {
+	log.debug "setWhite1Level: ${value}"
     def transitionTime = swapEndianHex(hexF(duration, 4))
     
     
