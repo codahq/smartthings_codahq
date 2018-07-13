@@ -29,6 +29,8 @@ private getDimmableEndpointId() {
 
 private getCOLOR_CONTROL_CLUSTER() { 0x0300 }
 private getHUE_SATURATION_COMMAND() { 6 }
+private getWHITE_CONTROL_CLUSTER() { 0x0006 }
+private getWHITE_LEVEL_CONTROL_CLUSTER() { 0x0008 }
 
 metadata {
 	
@@ -147,7 +149,7 @@ metadata {
 		}
         valueTile("wwValueTile", "device.wwLevel", height: 1, width: 1) {
         	state "wwLevel", label:'${currentValue}%'
-        } 
+        }
         
         valueTile("colorMode", "device.colorMode", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
             state "colorMode", label: '${currentValue}'
@@ -232,12 +234,44 @@ def installed() {
 }
 
 def addChildWhiteChannel() {
-	addChildDevice(
-        "Gledopto RGBW LED White Channel Controller",
-        "${device.deviceNetworkId}-1",
-        null,
-        [completedSetup: true, label: "${device.displayName} White Channel", isComponent: false, componentName: "whiteChannel", componentLabel: "White Channel"]
-    )
+    try {
+        //try to add the child device.  it may fail if the device handler is not present.  
+        addChildDevice(
+            "Gledopto RGBW LED White Channel Controller",
+            "${device.deviceNetworkId}-1",
+            null,
+            [completedSetup: true, label: "${device.displayName} White Channel", isComponent: false, componentName: "whiteChannel", componentLabel: "White Channel"]
+        )
+    }
+    catch (e)
+    {
+        log.info "Adding child device for white channel failed!  Was the child device handler installed?"
+    }
+}
+
+def notifyChildren(events) {
+	def children = getChildDevices()
+   	children.each {child->
+    
+    	events.each {event->
+       	   	
+            log.info "notify child ${child} of ${event}"
+            
+           	if(event.name == "ww") {
+                child.sendEvent(name:"whiteChannel", value: event.value)
+           	}
+           	else if (event.name == "wwLevel") {
+           	   	if (event.value == 0) {
+           	   	    child.sendEvent(name: "whiteChannel", value: "off")
+           	   	}
+           	   	else if (child.currentValue("whiteChannel") == "off") {
+           	   	    child.sendEvent(name: "whiteChannel", value: "on")
+           	   	}
+           	   	child.sendEvent(name: "whiteChannelLevel", value: event.value)
+          	 }        
+        }
+   	}
+
 }
 
 // Parse incoming device messages to generate events
@@ -248,12 +282,17 @@ def parse(String description) {
     if (cluster && cluster.sourceEndpoint == Short.parseShort(dimmableEndpointId)) {
         logDebug "Warm White: $description"
         logTrace "Cluster - $cluster"
-        if (cluster.data[0] == 1) {
+
+        if (cluster.clusterId == WHITE_CONTROL_CLUSTER && cluster.data[0] == 1) {
             events += createEvent(name: "ww", value: "on")
         }
-        else if (cluster.data[0] == 0) {
+        else if (cluster.clusterId == WHITE_CONTROL_CLUSTER && cluster.data[0] == 0) {
             events += createEvent(name: "ww", value: "off")
         }
+        else if (cluster.clusterId == WHITE_LEVEL_CONTROL_CLUSTER) {
+            //don't do anything for now
+        }
+        notifyChildren(events)
     }
     else {
         logDebug "RGB: $description"
@@ -448,7 +487,11 @@ def setWhite1Level(value, duration = 21) {
 		sendEvent(name: "ww", value: "on")
 	}
 
-	sendEvent(name: "wwLevel", value: value)
+	def events = []
+    events += createEvent(name: "wwLevel", value: value)
+    notifyChildren(events)
+    sendEvent(name: "wwLevel", value: value)
+    
 	def level = hex(value * 2.55)
     if(value == 1) { level = hex(1) }
 	cmds << "st cmd 0x${device.deviceNetworkId} ${dimmableEndpointId} 8 4 {${level} ${transitionTime}}"
