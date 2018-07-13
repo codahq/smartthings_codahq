@@ -31,18 +31,18 @@ private getCOLOR_CONTROL_CLUSTER() { 0x0300 }
 private getHUE_SATURATION_COMMAND() { 6 }
 
 metadata {
-	// Automatically generated. Make future change here.
+	
 	definition (name: "Gledopto RGBW LED Controller", namespace: "codahq", author: "Ben Rimmasch") {
-		capability "Switch Level"
-		capability "Actuator"
-		capability "Color Control"
+        capability "Switch Level"
+        capability "Actuator"
+        capability "Color Control"
         capability "Color Temperature"
-		capability "Switch"
-		capability "Configuration"
-		capability "Polling"
-		capability "Refresh"
-		capability "Sensor"
-       
+        capability "Switch"
+        capability "Configuration"
+        capability "Polling"
+        capability "Refresh"
+        capability "Sensor"
+
         command "setAdjustedColor"
         command "startLoop"
         command "stopLoop"
@@ -66,7 +66,7 @@ metadata {
         attribute "loopTime", "number"
         attribute "alert", "string"
 
-		fingerprint profileId: "C05E", inClusters: "0000,0003,0004,0005,0006,0008,0300,1000", outClusters: "0019"
+        fingerprint profileId: "C05E", inClusters: "0000,0003,0004,0005,0006,0008,0300,1000", outClusters: "0019"
 	}
 
 	// simulator metadata
@@ -177,6 +177,67 @@ def logDebug(msg) {
 
 def logTrace(msg) {
 	//log.trace msg
+}
+
+def refresh() {
+
+    def unreachable = device.currentValue("unreachable")
+    if(unreachable == null) { 
+    	sendEvent(name: 'unreachable', value: 1)
+    }
+    else { 
+    	sendEvent(name: 'unreachable', value: unreachable + 1)
+    }
+    if(unreachable > 2) { 
+    	sendEvent(name: "switch", value: "off")
+        sendEvent(name: "switchColor", value: "off", displayed: false)
+    }
+    
+    // Ping the device with color as to not get out of sync 
+    [
+	"st rattr 0x${device.deviceNetworkId} ${endpointId} 6 0", "delay 500",
+    "st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0", "delay 500",
+    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1","delay 500",
+    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0","delay 500",
+    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 7","delay 500",
+    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 8", "delay 500",
+    "st wattr 0x${device.deviceNetworkId} ${endpointId} 8 0x10 0x21 {0015}"
+    ]
+}
+
+def poll(){
+	logDebug "Poll is calling refresh"
+	refresh()
+}
+
+def configure(){
+	logDebug "Initiating configuration reporting and binding"
+    
+    [  
+    	zigbee.configSetup("6","0","0x10","0","60","{}"), "delay 1000",
+        zigbee.configSetup("8","0","0x20","5","600","{10}"), "delay 1500",
+        
+        "zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 6 {${device.zigbeeId}} {}", "delay 1000",
+		"zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 8 {${device.zigbeeId}} {}", "delay 1000",
+        "zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 0x0300 {${device.zigbeeId}} {}"
+	]
+    
+}
+
+def installed() {
+    state.counter = state.counter ? state.counter + 1 : 1
+    if (state.counter == 1) {
+        addChildWhiteChannel()
+    }
+}
+
+def addChildWhiteChannel() {
+	addChildDevice(
+        "Gledopto RGBW LED White Channel Controller",
+        "${device.deviceNetworkId}-1",
+        null,
+        [completedSetup: true, label: "${device.displayName} White Channel", isComponent: false, componentName: "whiteChannel", componentLabel: "White Channel"]
+    )
 }
 
 // Parse incoming device messages to generate events
@@ -658,51 +719,7 @@ def setSaturation(value, duration = 32) {
 	cmd
 }
 
-def refresh() {
 
-    def unreachable = device.currentValue("unreachable")
-    if(unreachable == null) { 
-    	sendEvent(name: 'unreachable', value: 1)
-    }
-    else { 
-    	sendEvent(name: 'unreachable', value: unreachable + 1)
-    }
-    if(unreachable > 2) { 
-    	sendEvent(name: "switch", value: "off")
-        sendEvent(name: "switchColor", value: "off", displayed: false)
-    }
-    
-// Ping the device with color as to not get out of sync 
-    [
-	"st rattr 0x${device.deviceNetworkId} ${endpointId} 6 0", "delay 500",
-    "st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0", "delay 500",
-    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1","delay 500",
-    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0","delay 500",
-    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 7","delay 500",
-    "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 8", "delay 500",
-    "st wattr 0x${device.deviceNetworkId} ${endpointId} 8 0x10 0x21 {0015}"
-    
-    ]
-}
-
-def poll(){
-	logDebug "Poll is calling refresh"
-	refresh()
-}
-
-def configure(){
-	logDebug "Initiating configuration reporting and binding"
-    
-    [  
-    	zigbee.configSetup("6","0","0x10","0","60","{}"), "delay 1000",
-        zigbee.configSetup("8","0","0x20","5","600","{10}"), "delay 1500",
-        
-        "zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 6 {${device.zigbeeId}} {}", "delay 1000",
-		"zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 8 {${device.zigbeeId}} {}", "delay 1000",
-        "zdo bind 0x${device.deviceNetworkId} ${endpointId} 1 0x0300 {${device.zigbeeId}} {}"
-	]
-    
-}
 
 //input Hue Integer values; returns color name for saturation 100%
 private getColorName(hueValue){
