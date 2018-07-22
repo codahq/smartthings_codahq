@@ -63,8 +63,8 @@ metadata {
 
         multiAttributeTile(name: "whiteChannel", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
         	tileAttribute("device.whiteChannel", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: "Off", action: "on", icon: "st.illuminance.illuminance.dark", backgroundColor: "#cccccc"
-            	attributeState "on", label: "On", action: "off", icon: "st.illuminance.illuminance.bright", backgroundColor: "#000000"
+				attributeState "off", label: "Off", action: "on", icon: "st.illuminance.illuminance.dark", backgroundColor: "#ffffff"
+            	attributeState "on", label: "On", action: "off", icon: "st.illuminance.illuminance.bright", backgroundColor: "#00a0dc"
 			}
             
             tileAttribute ("device.whiteChannelLevel", key: "SLIDER_CONTROL") {
@@ -73,7 +73,7 @@ metadata {
         }
 
         standardTile("whiteChannelIcon", "device.whiteChannel", height: 1, width: 1, inactiveLabel: false, decoration: "flat", canChangeIcon: false) {
-            state "off", label:"WW/W", action:"on", icon:"st.illuminance.illuminance.dark", backgroundColor:"#cccccc"
+            state "off", label:"WW/W", action:"on", icon:"st.illuminance.illuminance.dark", backgroundColor:"#ffffff"
             state "on", label:"WW/W", action:"off", icon:"st.illuminance.illuminance.bright", backgroundColor:"#000000"
         }
         controlTile("whiteChannelSliderControl", "device.whiteChannelLevel", "slider", height: 1, width: 4, inactiveLabel: false) {
@@ -83,7 +83,7 @@ metadata {
             state "whiteChannelLevel", label:'${currentValue}%'
         } 
         
-        main "whiteChannelIcon"
+        main "whiteChannel"
         details(["whiteChannel", "whiteChannelIcon", "whiteChannelSliderControl", "whiteChannelValueTile"])
         
 
