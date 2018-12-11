@@ -10,3 +10,4 @@ Besides the August Lock Pro 3rd Gen (with Z-Wave) this repo also contains a few 
 - Gledopto 2.4G Wireless RGBW LED Controller (Zigbee) 
 - Gledopto 2.4G Wireless RGBW LED Controller White Channel (Zigbee) (separate child device handler for the white channel. meh.)
 - OpenGarage (WiFi)
+- Monoprice Z-Wave Plus Smart Plug and Repeater with 2 USB Ports Always On (Z-Wave)
