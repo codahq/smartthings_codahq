@@ -1,7 +1,7 @@
 /**
  *  Z-Wave Always On Metering Switch
  *
- *  This device handler is tweaked for use with Monoprice 27481 found here:
+ *  This device handler is tweaked for use with Monoprice Z-Wave Plus Smart Plug and Repeater with 2 USB Ports 27481 found here:
  *  https://www.monoprice.com/product?p_id=27481
  *  The changes facilitate its usage as a power metering switch for dryer, dishwasher, etc. applications where a 
  *  requirement for the switch to remain in the on position exists.  The biggest change is that there is no on/off 
